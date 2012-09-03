@@ -122,6 +122,7 @@ class Leaderboard
   # @param score [float] Member score.
   # @param member_data [Hash] Optional member data.
   def rank_member_in(leaderboard_name, member, score, member_data)
+    puts "rank member in"
     @redis_connection.multi do |transaction|
       
       prev_score = score_for_in(leaderboard_name, member)
