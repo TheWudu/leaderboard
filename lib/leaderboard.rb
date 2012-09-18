@@ -23,7 +23,8 @@ class Leaderboard
   # +DEFAULT_REDIS_HOST+ and +DEFAULT_REDIS_PORT+ will be passed.
   DEFAULT_REDIS_OPTIONS = {
     :host => DEFAULT_REDIS_HOST,
-    :port => DEFAULT_REDIS_PORT
+    :port => DEFAULT_REDIS_PORT,
+    :db => 14
   }
 
   # Default options when requesting data from a leaderboard.
