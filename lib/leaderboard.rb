@@ -23,8 +23,7 @@ class Leaderboard
   # +DEFAULT_REDIS_HOST+ and +DEFAULT_REDIS_PORT+ will be passed.
   DEFAULT_REDIS_OPTIONS = {
     :host => DEFAULT_REDIS_HOST,
-    :port => DEFAULT_REDIS_PORT,
-    :db => 14
+    :port => DEFAULT_REDIS_PORT
   }
 
   # Default options when requesting data from a leaderboard.
@@ -618,6 +617,28 @@ class Leaderboard
   end
 
   alias_method :all_members_from, :all_leaders_from
+  
+  def members_from_rank_range(minimum_rank, maximum_rank, options = {}))
+    members_from_rank_range_in(@leaderboard_name, minimum_rank, maximum_rank, options = {}))
+  end
+  
+  def members_from_rank_range_in(leaderboard_name, minimum_rank, maximum_rank, options = {}))
+    leaderboard_options = DEFAULT_LEADERBOARD_REQUEST_OPTIONS.dup
+    leaderboard_options.merge!(options)
+    
+    if @reverse
+      raw_leader_data = @redis_connection.zrange(leaderboard_name, minimum_rank, maximum_rank, :with_scores => false)
+    else
+      raw_leader_data = @redis_connection.zrevrange(leaderboard_name, minimum_rank, maximum_rank, :with_scores => false)
+    end
+
+    if raw_leader_data
+      return ranked_in_list_in(leaderboard_name, raw_leader_data, leaderboard_options)
+    else
+      return []
+    end
+  end
+  
 
   # Retrieve members from the leaderboard within a given score range.
   #
