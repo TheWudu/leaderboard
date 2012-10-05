@@ -619,7 +619,7 @@ class Leaderboard
   alias_method :all_members_from, :all_leaders_from
   
   def members_from_rank_range(minimum_rank, maximum_rank, options = {})
-    members_from_rank_range_in(@leaderboard_name, minimum_rank-1, maximum_rank-1, options)
+    members_from_rank_range_in(@leaderboard_name, minimum_rank.to_i - 1, maximum_rank.to_i - 1, options)
   end
   
   def members_from_rank_range_in(leaderboard_name, minimum_rank, maximum_rank, options = {})
@@ -648,7 +648,7 @@ class Leaderboard
   #
   # @return members from the leaderboard that fall within the given score range.
   def members_from_score_range(minimum_score, maximum_score, options = {})
-    members_from_score_range_in(@leaderboard_name, minimum_score-1, maximum_score, options)
+    members_from_score_range_in(@leaderboard_name, minimum_score, maximum_score, options)
   end
 
   # Retrieve members from the named leaderboard within a given score range.
