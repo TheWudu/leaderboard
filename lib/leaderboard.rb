@@ -618,11 +618,11 @@ class Leaderboard
 
   alias_method :all_members_from, :all_leaders_from
   
-  def members_from_rank_range(minimum_rank, maximum_rank, options = {}))
-    members_from_rank_range_in(@leaderboard_name, minimum_rank, maximum_rank, options = {}))
+  def members_from_rank_range(minimum_rank, maximum_rank, options = {})
+    members_from_rank_range_in(@leaderboard_name, minimum_rank, maximum_rank, options = {})
   end
   
-  def members_from_rank_range_in(leaderboard_name, minimum_rank, maximum_rank, options = {}))
+  def members_from_rank_range_in(leaderboard_name, minimum_rank, maximum_rank, options = {})
     leaderboard_options = DEFAULT_LEADERBOARD_REQUEST_OPTIONS.dup
     leaderboard_options.merge!(options)
     
