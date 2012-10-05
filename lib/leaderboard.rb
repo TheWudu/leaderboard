@@ -627,9 +627,9 @@ class Leaderboard
     leaderboard_options.merge!(options)
     
     if @reverse
-      raw_leader_data = @redis_connection.zrange(leaderboard_name, minimum_rank, maximum_rank, :with_scores => false)
+      raw_leader_data = @redis_connection.zrange(leaderboard_name, minimum_rank, maximum_rank)
     else
-      raw_leader_data = @redis_connection.zrevrange(leaderboard_name, minimum_rank, maximum_rank, :with_scores => false)
+      raw_leader_data = @redis_connection.zrevrange(leaderboard_name, minimum_rank, maximum_rank)
     end
 
     if raw_leader_data
