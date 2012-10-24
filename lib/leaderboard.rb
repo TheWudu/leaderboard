@@ -124,13 +124,13 @@ class Leaderboard
   def rank_member_in(leaderboard_name, member, score, member_data)
         
     prev_score = score_for_in(leaderboard_name, member)  
-    update_member_data = ((@reverse && prev_score > score) || prev_score < score) ? true : false
+    update_member_data = (member_data && ((@reverse && prev_score > score) || prev_score < score || prev_score == 0))
 
     @redis_connection.multi do |transaction|
       
       transaction.zadd(leaderboard_name, score, member)
                        
-      if member_data && update_member_data
+      if update_member_data
         transaction.hmset(member_data_key(leaderboard_name, member), *member_data.to_a.flatten)
       end
     end
