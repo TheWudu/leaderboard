@@ -128,9 +128,8 @@ class Leaderboard
 
     @redis_connection.zadd(leaderboard_name, score, member)
                        
-      if update_member_data
-        @redis_connection.hmset(member_data_key(leaderboard_name, member), *member_data.to_a.flatten)
-      end
+    if update_member_data
+      @redis_connection.hmset(member_data_key(leaderboard_name, member), *member_data.to_a.flatten)
     end
   end
 
@@ -388,10 +387,10 @@ class Leaderboard
     responses = []
 
     responses << @redis_connection.zscore(leaderboard_name, member)
-    responses << if @reverse
-      @redis_connection.zrank(leaderboard_name, member)
+    if @reverse
+      responses << @redis_connection.zrank(leaderboard_name, member)
     else
-      @redis_connection.zrevrank(leaderboard_name, member)
+      responses << @redis_connection.zrevrank(leaderboard_name, member)
     end
 
     responses[0] = responses[0].to_f
