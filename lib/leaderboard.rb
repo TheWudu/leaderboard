@@ -126,12 +126,10 @@ class Leaderboard
     prev_score = score_for_in(leaderboard_name, member)  
     update_member_data = (member_data && ((@reverse && prev_score > score) || prev_score < score || prev_score == 0))
 
-    @redis_connection.multi do |transaction|
-      
-      transaction.zadd(leaderboard_name, score, member)
+    @redis_connection.zadd(leaderboard_name, score, member)
                        
       if update_member_data
-        transaction.hmset(member_data_key(leaderboard_name, member), *member_data.to_a.flatten)
+        @redis_connection.hmset(member_data_key(leaderboard_name, member), *member_data.to_a.flatten)
       end
     end
   end
@@ -203,10 +201,8 @@ class Leaderboard
       members_and_scores.flatten!
     end
 
-    @redis_connection.multi do |transaction|
-      members_and_scores.each_slice(2) do |member_and_score|
-        transaction.zadd(leaderboard_name, member_and_score[1], member_and_score[0])
-      end
+    members_and_scores.each_slice(2) do |member_and_score|
+      @redis_connection.zadd(leaderboard_name, member_and_score[1], member_and_score[0])
     end
   end
 
@@ -222,10 +218,8 @@ class Leaderboard
   # @param leaderboard_name [String] Name of the leaderboard.
   # @param member [String] Member name.
   def remove_member_from(leaderboard_name, member)
-    @redis_connection.multi do |transaction|
-      transaction.zrem(leaderboard_name, member)
-      transaction.del(member_data_key(leaderboard_name, member))
-    end
+    @redis_connection.zrem(leaderboard_name, member)
+    @redis_connection.del(member_data_key(leaderboard_name, member))
   end
 
   # Retrieve the total number of members in the leaderboard.
@@ -391,13 +385,13 @@ class Leaderboard
   #
   # @return the score and rank for a member in the named leaderboard as a Hash.
   def score_and_rank_for_in(leaderboard_name, member, use_zero_index_for_rank = false)
-    responses = @redis_connection.multi do |transaction|
-      transaction.zscore(leaderboard_name, member)
-      if @reverse
-        transaction.zrank(leaderboard_name, member)
-      else
-        transaction.zrevrank(leaderboard_name, member)
-      end
+    responses = []
+
+    responses << @redis_connection.zscore(leaderboard_name, member)
+    responses << if @reverse
+      @redis_connection.zrank(leaderboard_name, member)
+    else
+      @redis_connection.zrevrank(leaderboard_name, member)
     end
 
     responses[0] = responses[0].to_f
@@ -443,10 +437,7 @@ class Leaderboard
   def percentile_for_in(leaderboard_name, member)
     return nil unless check_member_in?(leaderboard_name, member)
 
-    responses = @redis_connection.multi do |transaction|
-      transaction.zcard(leaderboard_name)
-      transaction.zrevrank(leaderboard_name, member)
-    end
+    responses = [@redis_connection.zcard(leaderboard_name), @redis_connection.zrevrank(leaderboard_name, member)]
 
     percentile = ((responses[0] - responses[1] - 1).to_f / responses[0].to_f * 100).ceil
     if @reverse
@@ -774,15 +765,14 @@ class Leaderboard
 
     ranks_for_members = []
 
-    responses = @redis_connection.multi do |transaction|
-      members.each do |member|
-        if @reverse
-          transaction.zrank(leaderboard_name, member) if leaderboard_options[:with_rank]
-        else
-          transaction.zrevrank(leaderboard_name, member) if leaderboard_options[:with_rank]
-        end
-        transaction.zscore(leaderboard_name, member) if leaderboard_options[:with_scores]
+    responses = []
+    members.each do |member|
+      if @reverse
+        responses << @redis_connection.zrank(leaderboard_name, member) if leaderboard_options[:with_rank]
+      else
+        responses << @redis_connection.zrevrank(leaderboard_name, member) if leaderboard_options[:with_rank]
       end
+      responses << @redis_connection.zscore(leaderboard_name, member) if leaderboard_options[:with_scores]
     end
 
     members.each_with_index do |member, index|
